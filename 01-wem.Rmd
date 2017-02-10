@@ -1,0 +1,28 @@
+---
+title: "Word Vectors"
+date: "February 10, 2017"
+---
+
+```{r}
+library(text2vec)
+library(tidyverse)
+library(wordVectors)
+library(tsne)
+
+prep_word2vec("data/", "treaty_all.txt", lowercase = T)
+
+treaty_model <- train_word2vec("treaty_all.txt", output = "treaty_all_vectors.bin", threads = 6, vectors = 100, window = 12)
+treaty_model <- read.vectors("treaty_all_vectors.bin")
+
+treaty_model %>% nearest_to(treaty_model[["sioux"]])
+treaty_model %>% nearest_to(treaty_model[["land"]])
+treaty_model %>% nearest_to(treaty_model[[c("land","water")]])
+
+treaties <- treaty_model[rownames(treaty_model),]
+lands <- treaties %>% cosineSimilarity(treaty_model[[c("land","lands")]])
+water <- treaties %>% cosineSimilarity(treaty_model[[c("water", "waters")]])
+
+plot(lands, water, type = 'n', main = "Top words plotted by their similarity to land \n and water")
+text(lands, water, labels = rownames(treaties), cex=.7)
+abline(a=0, b=1)
+```
